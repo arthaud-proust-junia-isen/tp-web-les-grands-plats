@@ -1,4 +1,4 @@
-# Projet Les grands plats
+# Projet : Les grands plats
 
 ## Objectifs
 
@@ -6,6 +6,8 @@
 - Faire deux versions du projet (créer une branche pour chaque) :
   - Commencer par une recherche **linéaire**
   - Puis faire une recherche **dichotomique** (faire un logigramme pour mieux anticiper cette recherche)
+- Comparer les deux recherches à l'aide de https://jsben.ch/
+- Ajouter des données et constater la performance selon le volume et les deux algo
 
 ## Contraintes
 
@@ -23,3 +25,12 @@ Ces points doivent absolument être respectés durant le développement :
 4. La recherche principale affiche les premiers résultats le plus rapidement possible
 5. Les champs ingrédients, ustensiles et appareil de la recherche avancée proposent seulement les éléments restant dans les recettes présentes sur la page
 6. Les retours de recherche doivent être une intersection des résultats. Si l’on ajoute les tags “coco” et “chocolat” dans les ingrédients, on doit récupérer les recettes qui ont à la fois de la coco et du chocolat.
+
+## Etapes pour la recherche dichotomique
+
+Les étapes 1,2 et 3 sont à faire au chargement des données
+
+1. Trouver les mots-clés pertinents parmi le titre, les ingrédients et les descriptions
+2. Enlever les doublons et les mots de moins de 3 caractères. Gérer la case minuscule/majuscule et les accents
+3. Indexer les recettes par mots-clés
+4. Faire la recherche dichotomique à l'aide de la méthode **localeCompare**
