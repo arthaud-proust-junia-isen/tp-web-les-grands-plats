@@ -39,6 +39,9 @@ export class RecipeSearcher {
   private isRecipeMatchingTag(recipe: Recipe, tag: string): boolean {
     return (
       recipe.name.toLowerCase().includes(tag.toLowerCase()) ||
+      recipe.ingredients.some((ingredient) =>
+        ingredient.ingredient.toLowerCase().includes(tag.toLowerCase()),
+      ) ||
       recipe.time.toString() === tag
     );
   }

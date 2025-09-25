@@ -129,4 +129,24 @@ describe("RecipeSearcher", () => {
       expect(searcher.getResults()).toStrictEqual([RECIPES[0]]);
     });
   });
+
+  describe("searching by ingredient name", () => {
+    it("returns recipe matching exactly", ({ searcher }) => {
+      searcher.addTag("Sucre");
+
+      expect(searcher.getResults()).toStrictEqual([RECIPES[0]]);
+    });
+
+    it("returns recipe matching", ({ searcher }) => {
+      searcher.addTag("Sucr");
+
+      expect(searcher.getResults()).toStrictEqual([RECIPES[0]]);
+    });
+
+    it("returns recipe matching with different case", ({ searcher }) => {
+      searcher.addTag("sucre");
+
+      expect(searcher.getResults()).toStrictEqual([RECIPES[0]]);
+    });
+  });
 });
