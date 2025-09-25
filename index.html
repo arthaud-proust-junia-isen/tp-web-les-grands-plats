@@ -34,7 +34,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/src/css/style.scss" />
-    <script defer src="/src/js/main.ts"></script>
+    <script defer type="module" src="/src/js/main.ts"></script>
   </head>
 
   <body class="mx-auto" cz-shortcut-listen="true">
@@ -46,49 +46,39 @@
         <h1 class="text-center site-title">Les grands plats</h1>
       </a>
     </header>
+
     <main id="main">
       <div class="container">
         <div class="mb-4 row">
           <form
             class="search position-relative"
-            id="form"
+            id="search-form"
             role="search"
             autocomplete="off"
           >
             <label class="visually-hidden" for="search">Main search</label>
             <input
-              id="search"
+              id="search-input"
               class="search-input col-12 rounded"
               type="text"
               placeholder="Rechercher un ingrédient, appareil, ustensiles ou une recette"
             />
-            <div class="search-img position-absolute top-50 translate-middle">
+            <button
+              type="submit"
+              class="search-img position-absolute top-50 translate-middle"
+              title="Rechercher"
+            >
               <img class="search-logo" alt="" src="/img/search.svg" />
-            </div>
+            </button>
           </form>
         </div>
 
-        <div id="tags-container" class="mb-2 d-flex flex-wrap">
-          <div
-            id="lait-de-coco"
-            class="tags badge tag-lait-de-coco bg-primary ps-3 pe-2 py-2 me-3 mb-2 rounded"
-          >
-            <span>Lait de coco</span>
-            <button
-              id="btn-close-lait-de-coco"
-              type="button"
-              class="tag-close-btn align-middle ms-1"
-              aria-label="Close"
-            >
-              <img src="/img/tag-close.svg" alt="" aria-hidden="true" />
-            </button>
-          </div>
-        </div>
+        <div id="tags-container" class="mb-2 d-flex flex-wrap"></div>
 
         <div class="btn-group mb-4">
           <div class="dropdown mb-3 me-md-3">
             <div
-              class="btn btn-primary btn-lg dropdown-toggle btn-ingredients btn-tag-open rounded-0 rounded-top show"
+              class="btn btn-primary btn-lg dropdown-toggle btn-ingredients btn-tag-open rounded-0 rounded-top"
               id="dropdownIngredients"
               data-bs-toggle="dropdown"
               data-bs-offset="0,0"
@@ -123,7 +113,7 @@
               </div>
             </div>
             <div
-              class="dropdown-menu ingredients-dropdown rounded-0 rounded-bottom show"
+              class="dropdown-menu ingredients-dropdown rounded-0 rounded-bottom"
               aria-labelledby="dropdownIngredients"
               style="
                 position: absolute;
@@ -418,236 +408,64 @@
             </div>
           </div>
         </div>
-        <div
+
+        <section
           id="recipes-list"
           class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"
+        ></section>
+      </div>
+    </main>
+
+    <template id="search-item">
+      <div
+        class="tags position-relative badge tag-lait-de-coco bg-primary ps-3 pe-2 py-2 me-3 mb-2 rounded"
+      >
+        <span class="search-item-name"></span>
+        <button
+          type="button"
+          class="tag-close-btn stretched-link align-middle ms-1 search-item-remove"
+          aria-label="Close"
         >
-          <div class="col" id="1">
-            <div class="card h-100">
-              <div class="card-img-top"></div>
-              <div class="card-body">
-                <div class="row mb-2">
-                  <h2 class="card-title col-8 card-name">Limonade de Coco</h2>
-                  <div class="card-title col-4 text-end card-time-container">
-                    <img
-                      class="me-1 card-time-watch"
-                      alt=""
-                      src="/img/watch-time.svg"
-                    /><span class="card-time">10 min</span>
-                  </div>
-                </div>
-                <div class="row">
-                  <ul
-                    class="card-text col-6 list-unstyled card-ingredients-list"
-                  >
-                    <li class="card-ingredients-list-item">
-                      <span class="card-ingredients-list-item-ingredient"
-                        >Lait de coco</span
-                      >
-                      <span class="card-ingredients-list-item-quantity"></span>
-                      <span class="card-ingredients-list-item-unit"></span>
-                    </li>
+          <img src="/img/tag-close.svg" alt="" aria-hidden="true" />
+        </button>
+      </div>
+    </template>
 
-                    <li class="card-ingredients-list-item">
-                      <span class="card-ingredients-list-item-ingredient"
-                        >Jus de citron</span
-                      >
-                      <span class="card-ingredients-list-item-quantity"></span>
-                      <span class="card-ingredients-list-item-unit"></span>
-                    </li>
-
-                    <li class="card-ingredients-list-item">
-                      <span class="card-ingredients-list-item-ingredient"
-                        >Crème de coco</span
-                      >
-                      <span class="card-ingredients-list-item-quantity"></span>
-                      <span class="card-ingredients-list-item-unit"></span>
-                    </li>
-
-                    <li class="card-ingredients-list-item">
-                      <span class="card-ingredients-list-item-ingredient"
-                        >Sucre</span
-                      >
-                      <span class="card-ingredients-list-item-quantity"></span>
-                      <span class="card-ingredients-list-item-unit"></span>
-                    </li>
-
-                    <li class="card-ingredients-list-item">
-                      <span class="card-ingredients-list-item-ingredient"
-                        >Glaçons</span
-                      >
-                      <span class="card-ingredients-list-item-quantity"></span>
-                      <span class="card-ingredients-list-item-unit"></span>
-                    </li>
-                  </ul>
-                  <p class="card-text col-6 card-description">
-                    Mettre les glaçons à votre goût dans le blender, ajouter le
-                    lait, la crème de coco, le jus de 2 citrons et le sucre.
-                    Mixer jusqu'à avoir la consistence désirée
-                  </p>
-                </div>
+    <template id="recipe-card">
+      <article class="col">
+        <div class="card h-100">
+          <div class="card-img-top"></div>
+          <div class="card-body">
+            <div class="row mb-2">
+              <h2 class="card-title col-8 card-name"></h2>
+              <div class="card-title col-4 text-end card-time-container">
+                <img
+                  class="me-1 card-time-watch"
+                  alt=""
+                  src="/img/watch-time.svg"
+                />
+                <span class="card-time"></span>
               </div>
             </div>
-          </div>
-          <div class="col" id="2">
-            <div class="card h-100">
-              <div class="card-img-top"></div>
-              <div class="card-body">
-                <div class="row mb-2">
-                  <h2 class="card-title col-8 card-name">
-                    Poisson Cru à la tahitienne
-                  </h2>
-                  <div class="card-title col-4 text-end card-time-container">
-                    <img
-                      class="me-1 card-time-watch"
-                      alt=""
-                      src="/img/watch-time.svg"
-                    /><span class="card-time">60 min</span>
-                  </div>
-                </div>
-                <div class="row">
-                  <ul
-                    class="card-text col-6 list-unstyled card-ingredients-list"
-                  >
-                    <li class="card-ingredients-list-item">
-                      <span class="card-ingredients-list-item-ingredient"
-                        >Thon Rouge (ou blanc)</span
-                      >
-                      <span class="card-ingredients-list-item-quantity"></span>
-                      <span class="card-ingredients-list-item-unit"></span>
-                    </li>
-
-                    <li class="card-ingredients-list-item">
-                      <span class="card-ingredients-list-item-ingredient"
-                        >Concombre</span
-                      >
-                      <span class="card-ingredients-list-item-quantity"></span>
-                      <span class="card-ingredients-list-item-unit"></span>
-                    </li>
-
-                    <li class="card-ingredients-list-item">
-                      <span class="card-ingredients-list-item-ingredient"
-                        >Tomate</span
-                      >
-                      <span class="card-ingredients-list-item-quantity"></span>
-                      <span class="card-ingredients-list-item-unit"></span>
-                    </li>
-
-                    <li class="card-ingredients-list-item">
-                      <span class="card-ingredients-list-item-ingredient"
-                        >Carotte</span
-                      >
-                      <span class="card-ingredients-list-item-quantity"></span>
-                      <span class="card-ingredients-list-item-unit"></span>
-                    </li>
-
-                    <li class="card-ingredients-list-item">
-                      <span class="card-ingredients-list-item-ingredient"
-                        >Citron Vert</span
-                      >
-                      <span class="card-ingredients-list-item-quantity"></span>
-                      <span class="card-ingredients-list-item-unit"></span>
-                    </li>
-
-                    <li class="card-ingredients-list-item">
-                      <span class="card-ingredients-list-item-ingredient"
-                        >Lait de Coco</span
-                      >
-                      <span class="card-ingredients-list-item-quantity"></span>
-                      <span class="card-ingredients-list-item-unit"></span>
-                    </li>
-                  </ul>
-                  <p class="card-text col-6 card-description">
-                    Découper le thon en dés, mettre dans un plat et recouvrir de
-                    jus de citron vert (mieux vaut prendre un plat large et peu
-                    profond). Laisser reposer au réfrigérateur au moins 2
-                    heures. (S…
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col" id="3">
-            <div class="card h-100">
-              <div class="card-img-top"></div>
-              <div class="card-body">
-                <div class="row mb-2">
-                  <h2 class="card-title col-8 card-name">
-                    Poulet coco réunionnais
-                  </h2>
-                  <div class="card-title col-4 text-end card-time-container">
-                    <img
-                      class="me-1 card-time-watch"
-                      alt=""
-                      src="/img/watch-time.svg"
-                    /><span class="card-time">80 min</span>
-                  </div>
-                </div>
-                <div class="row">
-                  <ul
-                    class="card-text col-6 list-unstyled card-ingredients-list"
-                  >
-                    <li class="card-ingredients-list-item">
-                      <span class="card-ingredients-list-item-ingredient"
-                        >Poulet</span
-                      >
-                      <span class="card-ingredients-list-item-quantity"></span>
-                      <span class="card-ingredients-list-item-unit"></span>
-                    </li>
-
-                    <li class="card-ingredients-list-item">
-                      <span class="card-ingredients-list-item-ingredient"
-                        >Lait de coco</span
-                      >
-                      <span class="card-ingredients-list-item-quantity"></span>
-                      <span class="card-ingredients-list-item-unit"></span>
-                    </li>
-
-                    <li class="card-ingredients-list-item">
-                      <span class="card-ingredients-list-item-ingredient"
-                        >Coulis de tomate</span
-                      >
-                      <span class="card-ingredients-list-item-quantity"></span>
-                      <span class="card-ingredients-list-item-unit"></span>
-                    </li>
-
-                    <li class="card-ingredients-list-item">
-                      <span class="card-ingredients-list-item-ingredient"
-                        >Oignon</span
-                      >
-                      <span class="card-ingredients-list-item-quantity"></span>
-                      <span class="card-ingredients-list-item-unit"></span>
-                    </li>
-
-                    <li class="card-ingredients-list-item">
-                      <span class="card-ingredients-list-item-ingredient"
-                        >Poivron rouge</span
-                      >
-                      <span class="card-ingredients-list-item-quantity"></span>
-                      <span class="card-ingredients-list-item-unit"></span>
-                    </li>
-
-                    <li class="card-ingredients-list-item">
-                      <span class="card-ingredients-list-item-ingredient"
-                        >Huile d'olive</span
-                      >
-                      <span class="card-ingredients-list-item-quantity"></span>
-                      <span class="card-ingredients-list-item-unit"></span>
-                    </li>
-                  </ul>
-                  <p class="card-text col-6 card-description">
-                    Découper le poulet en morceaux, les faire dorer dans une
-                    cocotte avec de l'huile d'olive. Salez et poivrez. Une fois
-                    doré, laisser cuire en ajoutant de l'eau. Au bout de 30
-                    minutes, ajo…
-                  </p>
-                </div>
-              </div>
+            <div class="row">
+              <ul
+                class="card-text col-6 list-unstyled card-ingredients-list"
+              ></ul>
+              <p class="card-text col-6 card-description"></p>
             </div>
           </div>
         </div>
-      </div>
-    </main>
+      </article>
+    </template>
+
+    <template id="recipe-ingredient">
+      <li class="card-ingredients-list-item">
+        <span class="card-ingredients-list-item-ingredient"></span>
+        <span class="card-ingredients-list-item-quantity"></span>
+        <span class="card-ingredients-list-item-unit"></span>
+      </li>
+    </template>
+
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
