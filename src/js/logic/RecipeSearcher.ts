@@ -26,17 +26,20 @@ export class RecipeSearcher {
     const ALL_RECIPES_FILTER = () => true;
 
     return this.repository.getRecipes(
-      this.tags.size === 0 ? ALL_RECIPES_FILTER : this.filterFn.bind(this),
+      this.tags.size === 0
+        ? ALL_RECIPES_FILTER
+        : this.isRecipeMatchingSomeTag.bind(this),
     );
   }
 
-  private filterFn(recipe: Recipe): boolean {
-    for (const tag of this.tags.values()) {
-      if (recipe.name.toLowerCase().includes(tag.toLowerCase())) {
-        return true;
-      }
-    }
+  private isRecipeMatchingSomeTag(recipe: Recipe): boolean {
+    return [...this.tags].some((tag) => this.isRecipeMatchingTag(recipe, tag));
+  }
 
-    return false;
+  private isRecipeMatchingTag(recipe: Recipe, tag: string): boolean {
+    return (
+      recipe.name.toLowerCase().includes(tag.toLowerCase()) ||
+      recipe.time.toString() === tag
+    );
   }
 }

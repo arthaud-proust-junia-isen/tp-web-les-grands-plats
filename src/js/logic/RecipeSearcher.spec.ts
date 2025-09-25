@@ -102,31 +102,31 @@ describe("RecipeSearcher", () => {
     });
   });
 
-  describe("one tag applied", () => {
-    it("returns recipe with title matching exactly", ({ searcher }) => {
+  describe("searching by name", () => {
+    it("returns recipe matching exactly", ({ searcher }) => {
       searcher.addTag("Limonade de Coco");
 
       expect(searcher.getResults()).toStrictEqual([RECIPES[0]]);
     });
 
-    it("returns recipe with title matching", ({ searcher }) => {
+    it("returns recipe matching", ({ searcher }) => {
       searcher.addTag("Limonade");
 
       expect(searcher.getResults()).toStrictEqual([RECIPES[0]]);
     });
 
-    it("returns recipe with title matching with different case", ({
-      searcher,
-    }) => {
+    it("returns recipe matching with different case", ({ searcher }) => {
       searcher.addTag("limonade");
 
       expect(searcher.getResults()).toStrictEqual([RECIPES[0]]);
     });
+  });
 
-    it("does not return recipe with title not matching", ({ searcher }) => {
-      searcher.addTag("none");
+  describe("searching by time", () => {
+    it("returns recipe matching exactly", ({ searcher }) => {
+      searcher.addTag("10");
 
-      expect(searcher.getResults()).toStrictEqual([]);
+      expect(searcher.getResults()).toStrictEqual([RECIPES[0]]);
     });
   });
 });
