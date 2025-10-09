@@ -1,0 +1,7 @@
+@import 'tailwindcss';
+
+@layer utilities {
+  .fluid-link {
+    @apply after:absolute after:inset-0 cursor-pointer;
+  }
+}
