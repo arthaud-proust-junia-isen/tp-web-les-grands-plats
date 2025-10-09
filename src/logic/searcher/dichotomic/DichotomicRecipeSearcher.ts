@@ -2,15 +2,19 @@ import type { Recipe } from '@/logic/Recipe'
 import type { RecipeFilters } from '@/logic/RecipeFilters'
 import { RecipeMatcher } from '@/logic/RecipeMatcher'
 import type { RecipeRepository } from '@/logic/RecipeRepository'
+import { RecipeIndexer } from '@/logic/searcher/dichotomic/RecipeIndexer'
 import { CHARS_COUNT_TO_START_QUERY, type IRecipeSearcher } from '@/logic/searcher/RecipeSearcher'
 
 const dedupeItems = <T>(items: Array<T>) => Array.from(new Set(items))
 
-export class BaseRecipeSearcher implements IRecipeSearcher {
+export class DichotomicRecipeSearcher implements IRecipeSearcher {
   private repository: RecipeRepository
+  private indexer: RecipeIndexer = new RecipeIndexer()
 
   constructor(repository: RecipeRepository) {
     this.repository = repository
+
+    this.repository.all().forEach((recipe) => this.indexer.indexRecipe(recipe))
   }
 
   getResultsFor(filters: RecipeFilters) {
@@ -56,7 +60,7 @@ export class BaseRecipeSearcher implements IRecipeSearcher {
         return true
       }
 
-      return new RecipeMatcher(recipe).byQuery(filters.query)
+      return this.indexer.findRecipeIdsByText(filters.query).includes(recipe.id)
     })
   }
 

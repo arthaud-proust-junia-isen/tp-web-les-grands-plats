@@ -1,6 +1,7 @@
 import { RecipeFiltersBuilder } from '@/logic/RecipeFilters'
 import { RecipeRepository } from '@/logic/RecipeRepository'
 import { BaseRecipeSearcher } from '@/logic/searcher/BaseRecipeSearcher'
+import { DichotomicRecipeSearcher } from '@/logic/searcher/dichotomic/DichotomicRecipeSearcher'
 import { it as baseIt, describe, expect } from 'vitest'
 
 const RECIPES = [
@@ -78,7 +79,7 @@ const RECIPES = [
   },
 ]
 
-;[BaseRecipeSearcher].forEach((RecipeSearcherClass) => {
+;[BaseRecipeSearcher, DichotomicRecipeSearcher].forEach((RecipeSearcherClass) => {
   const it = baseIt.extend<{
     searcher: InstanceType<typeof RecipeSearcherClass>
     filtersBuilder: RecipeFiltersBuilder
