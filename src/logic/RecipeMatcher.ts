@@ -1,4 +1,4 @@
-import type { Recipe } from '@/js/logic/Recipe'
+import type { Recipe } from '@/logic/Recipe'
 
 export class RecipeMatcher {
   constructor(private recipe: Recipe) {}

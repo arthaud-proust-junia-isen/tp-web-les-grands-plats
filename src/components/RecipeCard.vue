@@ -30,7 +30,7 @@ import { ref } from 'vue'
 
 import RecipeIngredientsList from '@/components/RecipeIngredientsList.vue'
 import RecipeTime from '@/components/RecipeTime.vue'
-import type { Recipe } from '@/js/logic/Recipe'
+import type { Recipe } from '@/logic/Recipe'
 
 defineProps<{
   recipe: Recipe

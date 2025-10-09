@@ -1,5 +1,5 @@
-import { RecipeRepository } from '@/js/logic/RecipeRepository'
-import { RecipeSearcher } from '@/js/logic/RecipeSearcher'
+import { RecipeRepository } from '@/logic/RecipeRepository'
+import { RecipeSearcher } from '@/logic/RecipeSearcher'
 import { computed, reactive } from 'vue'
 
 export const useRecipeSearcher = async () => {

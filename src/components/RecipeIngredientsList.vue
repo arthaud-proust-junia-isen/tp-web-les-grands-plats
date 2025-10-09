@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Ingredient } from '@/js/logic/Recipe'
+import type { Ingredient } from '@/logic/Recipe'
 defineProps<{
   ingredients: Array<Ingredient>
 }>()
