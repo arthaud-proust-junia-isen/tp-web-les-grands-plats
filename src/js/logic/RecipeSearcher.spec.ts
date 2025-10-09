@@ -34,7 +34,7 @@ const RECIPES = [
     time: 10,
     description:
       "Mettre les glaçons à votre goût dans le blender, ajouter le lait, la crème de coco, le jus de 2 citrons et le sucre. Mixer jusqu'à avoir la consistence désirée",
-    appliance: "Blender",
+    appliance: "Blender thermomix",
     ustensils: ["cuillère à Soupe", "verres", "presse citron"],
   },
   {
@@ -91,13 +91,51 @@ describe("RecipeSearcher", () => {
     it("returns all results", ({ searcher }) => {
       expect(searcher.getResults()).toStrictEqual(RECIPES);
     });
+
+    it("returns all ingredients ", ({ searcher }) => {
+      expect(searcher.getAvailableIngredients()).toEqual([
+        "lait de coco",
+        "jus de citron",
+        "crème de coco",
+        "sucre",
+        "glaçons",
+
+        "thon rouge (ou blanc)",
+        "concombre",
+        "tomate",
+        "carotte",
+        "citron vert",
+      ]);
+    });
+
+    it("returns all appliances", ({ searcher }) => {
+      expect(searcher.getAvailableAppliances()).toEqual([
+        "blender thermomix",
+        "saladier",
+      ]);
+    });
+
+    it("returns all ustensils ", ({ searcher }) => {
+      expect(searcher.getAvailableUstensils()).toEqual([
+        "cuillère à soupe",
+        "verres",
+        "presse citron",
+      ]);
+    });
   });
 
   describe("searching with query shorter than 3 chars", () => {
-    it("returns all results", ({ searcher }) => {
+    it("doesn't take in account search query", ({ searcher }) => {
       searcher.search("ab");
 
       expect(searcher.getResults()).toStrictEqual(RECIPES);
+    });
+
+    it("takes in account tags", ({ searcher }) => {
+      searcher.search("ab");
+      searcher.addTag("Lait de coco");
+
+      expect(searcher.getResults()).toStrictEqual([RECIPES[0]]);
     });
   });
 
@@ -119,6 +157,30 @@ describe("RecipeSearcher", () => {
 
       expect(searcher.getResults()).toStrictEqual([RECIPES[0]]);
     });
+
+    it("returns available tags for query", ({ searcher }) => {
+      searcher.search("Limonade de Coco");
+
+      expect(searcher.getAvailableIngredients()).toEqual([
+        "lait de coco",
+        "jus de citron",
+        "crème de coco",
+        "sucre",
+        "glaçons",
+      ]);
+    });
+
+    it("returns available appliances for query", ({ searcher }) => {
+      searcher.search("Limonade de Coco");
+
+      expect(searcher.getAvailableAppliances()).toEqual(["blender thermomix"]);
+    });
+
+    it("returns available ustensils for query ", ({ searcher }) => {
+      searcher.search("Poisson Cru à la tahitienne");
+
+      expect(searcher.getAvailableUstensils()).toEqual(["presse citron"]);
+    });
   });
 
   describe("searching by ingredient name", () => {
@@ -136,6 +198,46 @@ describe("RecipeSearcher", () => {
 
     it("returns recipe matching with different case", ({ searcher }) => {
       searcher.search("sucre");
+
+      expect(searcher.getResults()).toStrictEqual([RECIPES[0]]);
+    });
+  });
+
+  describe("searching by ustensils name", () => {
+    it("returns recipe matching exactly", ({ searcher }) => {
+      searcher.search("cuillère à Soupe");
+
+      expect(searcher.getResults()).toStrictEqual([RECIPES[0]]);
+    });
+
+    it("returns recipe matching partially", ({ searcher }) => {
+      searcher.search("cuillère à Soup");
+
+      expect(searcher.getResults()).toStrictEqual([RECIPES[0]]);
+    });
+
+    it("returns recipe matching with different case", ({ searcher }) => {
+      searcher.search("cuillère à soupe");
+
+      expect(searcher.getResults()).toStrictEqual([RECIPES[0]]);
+    });
+  });
+
+  describe("searching by appliance name", () => {
+    it("returns recipe matching exactly", ({ searcher }) => {
+      searcher.search("Blender thermomix");
+
+      expect(searcher.getResults()).toStrictEqual([RECIPES[0]]);
+    });
+
+    it("returns recipe matching partially", ({ searcher }) => {
+      searcher.search("Blender thermomi");
+
+      expect(searcher.getResults()).toStrictEqual([RECIPES[0]]);
+    });
+
+    it("returns recipe matching with different case", ({ searcher }) => {
+      searcher.search("blender thermomix");
 
       expect(searcher.getResults()).toStrictEqual([RECIPES[0]]);
     });

@@ -2,6 +2,13 @@ import slugify from "slugify";
 import type { RecipeSearcher } from "../logic/RecipeSearcher";
 import { SearchItem } from "./components/SearchItem";
 import { RecipeCard } from "./components/RecipeCard";
+import { TagAppliance, TagUstensil } from "./components/Tags";
+
+const removeAllChilds = (element: HTMLElement) => {
+  while (element.lastChild) {
+    element.removeChild(element.lastChild);
+  }
+};
 
 export class UiManager {
   private readonly tagsContainer = document.getElementById(
@@ -18,6 +25,18 @@ export class UiManager {
   private readonly recipesList = document.getElementById(
     "recipes-list",
   ) as HTMLDivElement;
+
+  private readonly ingredientsList = document.getElementById(
+    "ingredients-list",
+  ) as HTMLUListElement;
+
+  private readonly appliancesList = document.getElementById(
+    "appliances-list",
+  ) as HTMLUListElement;
+
+  private readonly ustensilsList = document.getElementById(
+    "ustensils-list",
+  ) as HTMLUListElement;
 
   private recipeSearcher: RecipeSearcher;
 
@@ -56,10 +75,36 @@ export class UiManager {
   }
 
   private renderResults() {
-    this.recipesList.innerHTML = "";
-
+    removeAllChilds(this.recipesList);
     this.recipeSearcher.getResults().forEach((recipe) => {
       this.recipesList.appendChild(RecipeCard({ recipe }));
+    });
+
+    removeAllChilds(this.appliancesList);
+    this.recipeSearcher.getAvailableAppliances().forEach((appliance) => {
+      const tag = TagAppliance({
+        name: appliance,
+        onClick: () => this.addTag(appliance),
+      });
+      this.appliancesList.appendChild(tag);
+    });
+
+    removeAllChilds(this.ingredientsList);
+    this.recipeSearcher.getAvailableIngredients().forEach((ingredient) => {
+      const tag = TagAppliance({
+        name: ingredient,
+        onClick: () => this.addTag(ingredient),
+      });
+      this.ingredientsList.appendChild(tag);
+    });
+
+    removeAllChilds(this.ustensilsList);
+    this.recipeSearcher.getAvailableUstensils().forEach((ustensil) => {
+      const tag = TagUstensil({
+        name: ustensil,
+        onClick: () => this.addTag(ustensil),
+      });
+      this.ustensilsList.appendChild(tag);
     });
   }
 }

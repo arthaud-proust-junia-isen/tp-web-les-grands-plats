@@ -3,6 +3,8 @@ import type { RecipeRepository } from "./RecipeRepository";
 
 const CHARS_COUNT_TO_START_QUERY = 3;
 
+const dedupeItems = <T>(items: Array<T>) => Array.from(new Set(items));
+
 export class RecipeSearcher {
   private tags: Set<string> = new Set();
   private query: string = "";
@@ -26,16 +28,40 @@ export class RecipeSearcher {
 
   getResults(): Array<Recipe> {
     return this.repository.getRecipes((recipe) => {
-      if (this.query.length < CHARS_COUNT_TO_START_QUERY) {
-        return true;
-      }
-
       if (this.tags.size > 0 && !this.isRecipeMatchingSomeTag(recipe)) {
         return false;
       }
 
+      if (this.query.length < CHARS_COUNT_TO_START_QUERY) {
+        return true;
+      }
+
       return this.isRecipeMatchingQuery(recipe, this.query);
     });
+  }
+
+  getAvailableIngredients(): Array<string> {
+    return dedupeItems(
+      this.getResults().flatMap((result) =>
+        result.ingredients.map((ingredient) =>
+          ingredient.ingredient.toLowerCase(),
+        ),
+      ),
+    );
+  }
+
+  getAvailableAppliances(): Array<string> {
+    return dedupeItems(
+      this.getResults().map((result) => result.appliance.toLowerCase()),
+    );
+  }
+
+  getAvailableUstensils(): Array<string> {
+    return dedupeItems(
+      this.getResults().flatMap((result) =>
+        result.ustensils.map((ustensil) => ustensil.toLowerCase()),
+      ),
+    );
   }
 
   private isRecipeMatchingSomeTag(recipe: Recipe): boolean {
@@ -47,8 +73,12 @@ export class RecipeSearcher {
   private isRecipeMatchingQuery(recipe: Recipe, query: string): boolean {
     return (
       recipe.name.toLowerCase().includes(query.toLowerCase()) ||
+      recipe.appliance.toLowerCase().includes(query.toLowerCase()) ||
       recipe.ingredients.some((ingredient) =>
         ingredient.ingredient.toLowerCase().includes(query.toLowerCase()),
+      ) ||
+      recipe.ustensils.some((ustensil) =>
+        ustensil.toLowerCase().includes(query.toLowerCase()),
       )
     );
   }
