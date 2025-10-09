@@ -1,54 +1,60 @@
-# app
+# Projet : Les grands plats
 
-This template should help get you started developing with Vue 3 in Vite.
+## Objectifs
 
-## Recommended IDE Setup
+- Rendre fonctionnel le code selon les données issues du JSON.
+- Faire deux versions du projet (créer une branche pour chaque) :
+  - Commencer par une recherche **linéaire**
+  - Puis faire une recherche **dichotomique** (faire un logigramme pour mieux anticiper cette recherche)
+- Comparer les deux recherches à l'aide de https://jsben.ch/
+- Ajouter des données et constater la performance selon le volume et les deux algo
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Contraintes
 
-## Recommended Browser Setup
+- Faire le code en **POO**
+- Aucune librairie ne sera utilisée pour le JavaScript du moteur de recherche
+- Le code HTML et CSS pour l’interface (avec ou sans Bootstrap) devra passer avec succès le **validateur W3C**.
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## Règles de gestion
 
-## Type Support for `.vue` Imports in TS
+Ces points doivent absolument être respectés durant le développement :
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+1. La recherche doit pouvoir se faire via le champ principal ou via les tags (ingrédients, ustensiles ou appareil)
+2. La recherche principale se lance **à partir de 3 caractères** entrés par l’utilisateur dans la barre de recherche
+3. La recherche s’actualise pour chaque nouveau caractère entré
+4. La recherche principale affiche les premiers résultats le plus rapidement possible
+5. Les champs ingrédients, ustensiles et appareil de la recherche avancée proposent seulement les éléments restant dans les recettes présentes sur la page
+6. Les retours de recherche doivent être une intersection des résultats. Si l’on ajoute les tags “coco” et “chocolat” dans les ingrédients, on doit récupérer les recettes qui ont à la fois de la coco et du chocolat.
 
-## Customize configuration
+## Etapes pour la recherche dichotomique
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+Les étapes 1,2 et 3 sont à faire au chargement des données
 
-## Project Setup
+1. Trouver les mots-clés pertinents parmi le titre, les ingrédients et les descriptions
+2. Enlever les doublons et les mots de moins de 3 caractères. Gérer la case minuscule/majuscule et les accents
+3. Indexer les recettes par mots-clés
+4. Faire la recherche dichotomique à l'aide de la méthode **localeCompare**
+
+## Installation du projet
 
 ```sh
-npm install
+yarn
 ```
 
-### Compile and Hot-Reload for Development
+### Lancer en mode développement
 
 ```sh
-npm run dev
+yarn dev
 ```
 
 ### Type-Check, Compile and Minify for Production
 
 ```sh
-npm run build
+yarn build
 ```
 
 ### Run Unit Tests with [Vitest](https://vitest.dev/)
 
 ```sh
-npm run test:unit
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
+yarn test:unit
 ```
