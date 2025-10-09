@@ -1,4 +1,3 @@
-import slugify from "slugify";
 import type { RecipeSearcher } from "../logic/RecipeSearcher";
 import { SearchItem } from "./components/SearchItem";
 import { RecipeCard } from "./components/RecipeCard";
@@ -15,11 +14,12 @@ export class UiManager {
     "tags-container",
   ) as HTMLDivElement;
 
-  private readonly searchForm = document.getElementById(
-    "search-form",
-  ) as HTMLFormElement;
   private readonly searchInput = document.getElementById(
     "search-input",
+  ) as HTMLInputElement;
+
+  private readonly searchIngredientInput = document.getElementById(
+    "search-ingredient",
   ) as HTMLInputElement;
 
   private readonly recipesList = document.getElementById(
@@ -46,8 +46,16 @@ export class UiManager {
     this.searchInput.addEventListener("keyup", (e) => {
       e.preventDefault();
 
+      this.searchIngredientInput.value = "";
+
       this.recipeSearcher.search(this.searchInput.value);
       this.renderResults();
+    });
+
+    this.searchIngredientInput.addEventListener("keyup", (e) => {
+      e.preventDefault();
+
+      this.renderIngredientResults();
     });
 
     this.renderResults();
@@ -80,6 +88,8 @@ export class UiManager {
       this.recipesList.appendChild(RecipeCard({ recipe }));
     });
 
+    this.renderIngredientResults();
+
     removeAllChilds(this.appliancesList);
     this.recipeSearcher.getAvailableAppliances().forEach((appliance) => {
       const tag = TagAppliance({
@@ -87,15 +97,6 @@ export class UiManager {
         onClick: () => this.addTag(appliance),
       });
       this.appliancesList.appendChild(tag);
-    });
-
-    removeAllChilds(this.ingredientsList);
-    this.recipeSearcher.getAvailableIngredients().forEach((ingredient) => {
-      const tag = TagAppliance({
-        name: ingredient,
-        onClick: () => this.addTag(ingredient),
-      });
-      this.ingredientsList.appendChild(tag);
     });
 
     removeAllChilds(this.ustensilsList);
@@ -106,5 +107,23 @@ export class UiManager {
       });
       this.ustensilsList.appendChild(tag);
     });
+  }
+
+  private renderIngredientResults() {
+    removeAllChilds(this.ingredientsList);
+    this.recipeSearcher
+      .getAvailableIngredients()
+      .filter((ingredient) =>
+        ingredient
+          .toLowerCase()
+          .includes(this.searchIngredientInput.value.toLowerCase()),
+      )
+      .forEach((ingredient) => {
+        const tag = TagAppliance({
+          name: ingredient,
+          onClick: () => this.addTag(ingredient),
+        });
+        this.ingredientsList.appendChild(tag);
+      });
   }
 }
