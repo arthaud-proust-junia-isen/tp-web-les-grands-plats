@@ -47,7 +47,7 @@ export class UiManager {
       onRemove: () => this.removeTag(name),
     });
 
-    tagEl.dataset.id = slugify(name);
+    tagEl.dataset.id = name;
 
     this.tagsContainer.appendChild(tagEl);
     this.recipeSearcher.addTag(name);
