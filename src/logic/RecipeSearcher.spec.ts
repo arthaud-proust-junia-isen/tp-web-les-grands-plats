@@ -1,4 +1,5 @@
-import { describe, expect, it as baseIt } from 'vitest'
+import { RecipeFiltersBuilder } from '@/logic/RecipeFilters'
+import { it as baseIt, describe, expect } from 'vitest'
 import { RecipeRepository } from './RecipeRepository'
 import { RecipeSearcher } from './RecipeSearcher'
 
@@ -79,21 +80,33 @@ const RECIPES = [
 
 export const it = baseIt.extend<{
   searcher: RecipeSearcher
+  filtersBuilder: RecipeFiltersBuilder
 }>({
   searcher: async ({}, use) => {
     const repo = new RecipeRepository(RECIPES)
     await use(new RecipeSearcher(repo))
   },
+  filtersBuilder: async ({}, use) => {
+    await use(new RecipeFiltersBuilder())
+  },
 })
 
 describe('RecipeSearcher', () => {
   describe('no search', () => {
-    it('returns all results', ({ searcher }) => {
-      expect(searcher.getResults()).toStrictEqual(RECIPES)
+    it('returns all results', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.build()
+
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.recipes).toStrictEqual(RECIPES)
     })
 
-    it('returns all ingredients ', ({ searcher }) => {
-      expect(searcher.getAvailableIngredients()).toEqual([
+    it('returns all ingredients ', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.build()
+
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.availableIngredients).toEqual([
         'lait de coco',
         'jus de citron',
         'crème de coco',
@@ -108,158 +121,176 @@ describe('RecipeSearcher', () => {
       ])
     })
 
-    it('returns all appliances', ({ searcher }) => {
-      expect(searcher.getAvailableAppliances()).toEqual(['blender thermomix', 'saladier'])
+    it('returns all appliances', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.build()
+
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.availableAppliances).toEqual(['blender thermomix', 'saladier'])
     })
 
-    it('returns all ustensils ', ({ searcher }) => {
-      expect(searcher.getAvailableUstensils()).toEqual([
-        'cuillère à soupe',
-        'verres',
-        'presse citron',
-      ])
+    it('returns all ustensils ', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.build()
+
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.availableUstensils).toEqual(['cuillère à soupe', 'verres', 'presse citron'])
     })
   })
 
   describe('searching with query shorter than 3 chars', () => {
-    it("doesn't take in account search query", ({ searcher }) => {
-      searcher.query = 'ab'
+    it("doesn't take in account search query", ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.withQuery('ab').build()
 
-      expect(searcher.getResults()).toStrictEqual(RECIPES)
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.recipes).toStrictEqual(RECIPES)
     })
 
-    it('takes in account ingredients', ({ searcher }) => {
-      searcher.query = 'ab'
-      searcher.ingredients.add('Crème de coco')
+    it('takes in account ingredients', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.withQuery('ab').withIngredient('Crème de coco').build()
 
-      expect(searcher.getResults()).toStrictEqual([RECIPES[0]])
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.recipes).toStrictEqual([RECIPES[0]])
     })
 
-    it('takes in account appliances', ({ searcher }) => {
-      searcher.query = 'ab'
-      searcher.appliances.add('Blender thermomix')
+    it('takes in account appliances', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.withQuery('ab').withAppliance('Blender thermomix').build()
 
-      expect(searcher.getResults()).toStrictEqual([RECIPES[0]])
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.recipes).toStrictEqual([RECIPES[0]])
     })
 
-    it('takes in account ustensils', ({ searcher }) => {
-      searcher.query = 'ab'
-      searcher.ustensils.add('cuillère à Soupe')
+    it('takes in account ustensils', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.withQuery('ab').withUstensil('cuillère à Soupe').build()
 
-      expect(searcher.getResults()).toStrictEqual([RECIPES[0]])
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.recipes).toStrictEqual([RECIPES[0]])
     })
   })
 
   describe('searching by name', () => {
-    it('returns recipe matching exactly', ({ searcher }) => {
-      searcher.query = 'Limonade de Coco'
+    it('returns recipe matching exactly', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.withQuery('Limonade de Coco').build()
 
-      expect(searcher.getResults()).toStrictEqual([RECIPES[0]])
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.recipes).toStrictEqual([RECIPES[0]])
     })
 
-    it('returns recipe matching', ({ searcher }) => {
-      searcher.query = 'Limonade'
+    it('returns recipe matching', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.withQuery('Limonade').build()
 
-      expect(searcher.getResults()).toStrictEqual([RECIPES[0]])
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.recipes).toStrictEqual([RECIPES[0]])
     })
 
-    it('returns recipe matching with different case', ({ searcher }) => {
-      searcher.query = 'limonade'
+    it('returns recipe matching with different case', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.withQuery('limonade').build()
 
-      expect(searcher.getResults()).toStrictEqual([RECIPES[0]])
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.recipes).toStrictEqual([RECIPES[0]])
     })
 
-    it('returns available ingredients for query', ({ searcher }) => {
-      searcher.query = 'Limonade de Coco'
+    it('returns available filters for results', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.withQuery('Limonade de Coco').build()
 
-      expect(searcher.getAvailableIngredients()).toEqual([
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.availableIngredients).toEqual([
         'lait de coco',
         'jus de citron',
         'crème de coco',
         'sucre',
         'glaçons',
       ])
-    })
 
-    it('returns available appliances for query', ({ searcher }) => {
-      searcher.query = 'Limonade de Coco'
+      expect(result.availableAppliances).toEqual(['blender thermomix'])
 
-      expect(searcher.getAvailableAppliances()).toEqual(['blender thermomix'])
-    })
-
-    it('returns available ustensils for query ', ({ searcher }) => {
-      searcher.query = 'Poisson Cru à la tahitienne'
-
-      expect(searcher.getAvailableUstensils()).toEqual(['presse citron'])
+      expect(result.availableUstensils).toEqual(['cuillère à soupe', 'verres', 'presse citron'])
     })
   })
 
   describe('searching by ingredient name', () => {
-    it('returns recipe matching exactly', ({ searcher }) => {
-      searcher.query = 'Sucre'
+    it('returns recipe matching exactly', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.withIngredient('Sucre').build()
 
-      expect(searcher.getResults()).toStrictEqual([RECIPES[0]])
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.recipes).toStrictEqual([RECIPES[0]])
     })
 
-    it('returns recipe matching partially', ({ searcher }) => {
-      searcher.query = 'Sucr'
+    it('returns recipe matching partially', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.withIngredient('Sucr').build()
 
-      expect(searcher.getResults()).toStrictEqual([RECIPES[0]])
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.recipes).toStrictEqual([RECIPES[0]])
     })
 
-    it('returns recipe matching with different case', ({ searcher }) => {
-      searcher.query = 'sucre'
+    it('returns recipe matching with different case', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.withIngredient('sucre').build()
 
-      expect(searcher.getResults()).toStrictEqual([RECIPES[0]])
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.recipes).toStrictEqual([RECIPES[0]])
     })
   })
 
   describe('searching by ustensils name', () => {
-    it('returns recipe matching exactly', ({ searcher }) => {
-      searcher.query = 'cuillère à Soupe'
+    it('returns recipe matching exactly', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.withUstensil('cuillère à soupe').build()
 
-      expect(searcher.getResults()).toStrictEqual([RECIPES[0]])
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.recipes).toStrictEqual([RECIPES[0]])
     })
 
-    it('returns recipe matching partially', ({ searcher }) => {
-      searcher.query = 'cuillère à Soup'
+    it('returns recipe matching partially', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.withUstensil('cuillère à Soup').build()
 
-      expect(searcher.getResults()).toStrictEqual([RECIPES[0]])
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.recipes).toStrictEqual([RECIPES[0]])
     })
 
-    it('returns recipe matching with different case', ({ searcher }) => {
-      searcher.query = 'cuillère à soupe'
+    it('returns recipe matching with different case', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.withUstensil('cuillère à soupe').build()
 
-      expect(searcher.getResults()).toStrictEqual([RECIPES[0]])
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.recipes).toStrictEqual([RECIPES[0]])
     })
   })
 
   describe('searching by appliance name', () => {
-    it('returns recipe matching exactly', ({ searcher }) => {
-      searcher.query = 'Blender thermomix'
+    it('returns recipe matching exactly', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.withAppliance('Blender thermomix').build()
 
-      expect(searcher.getResults()).toStrictEqual([RECIPES[0]])
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.recipes).toStrictEqual([RECIPES[0]])
     })
 
-    it('returns recipe matching partially', ({ searcher }) => {
-      searcher.query = 'Blender thermomi'
+    it('returns recipe matching partially', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.withAppliance('Blender thermomi').build()
 
-      expect(searcher.getResults()).toStrictEqual([RECIPES[0]])
+      const result = searcher.getResultsFor(filters)
+
+      expect(result.recipes).toStrictEqual([RECIPES[0]])
     })
 
-    it('returns recipe matching with different case', ({ searcher }) => {
-      searcher.query = 'blender thermomix'
+    it('returns recipe matching with different case', ({ searcher, filtersBuilder }) => {
+      const filters = filtersBuilder.withAppliance('blender thermomix').build()
 
-      expect(searcher.getResults()).toStrictEqual([RECIPES[0]])
-    })
-  })
+      const result = searcher.getResultsFor(filters)
 
-  describe('filters applied, then removed', () => {
-    it('returns all results', ({ searcher }) => {
-      searcher.appliances.add('test')
-      searcher.appliances.delete('test')
-
-      expect(searcher.getResults()).toStrictEqual(RECIPES)
+      expect(result.recipes).toStrictEqual([RECIPES[0]])
     })
   })
 })

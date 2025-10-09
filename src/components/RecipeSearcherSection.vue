@@ -4,7 +4,7 @@
       <form role="search" autocomplete="off">
         <label class="flex gap-2">
           <input
-            v-model="searcher.query.value"
+            v-model="query"
             class="w-full py-3 px-3 bg-gray-100 rounded-lg"
             type="text"
             placeholder="Rechercher un ingrédient, appareil, ustensiles ou une recette"
@@ -15,27 +15,27 @@
       <div class="mt-2 flex gap-2">
         <TagSelector
           class="flex-1"
-          :options="searcher.availableIngredients.value"
-          v-model="searcher.selectedIngredients.value"
-          :disabled="!searcher.availableIngredients.value.length"
+          :options="results.availableIngredients"
+          v-model="selectedIngredients"
+          :disabled="!results.availableIngredients.length"
           placeholder="Rechercher un ingrédient"
           type="ingredient"
         />
 
         <TagSelector
           class="flex-1"
-          :options="searcher.availableAppliances.value"
-          v-model="searcher.selectedAppliances.value"
-          :disabled="!searcher.availableAppliances.value.length"
+          :options="results.availableAppliances"
+          v-model="selectedAppliances"
+          :disabled="!results.availableAppliances.length"
           placeholder="Rechercher un appareil"
           type="appliance"
         />
 
         <TagSelector
           class="flex-1"
-          :options="searcher.availableUstensils.value"
-          v-model="searcher.selectedUstensils.value"
-          :disabled="!searcher.availableUstensils.value.length"
+          :options="results.availableUstensils"
+          v-model="selectedUstensils"
+          :disabled="!results.availableUstensils.length"
           placeholder="Rechercher un ustensile"
           type="ustensil"
         />
@@ -43,33 +43,33 @@
 
       <section class="mt-4 flex gap-2">
         <SearchItem
-          v-for="ingredient in searcher.selectedIngredients.value"
+          v-for="ingredient in selectedIngredients"
           :key="ingredient"
           :name="ingredient"
           type="ingredient"
-          @click="searcher.removeIngredient(ingredient)"
+          @click="removeIngredient(ingredient)"
         />
 
         <SearchItem
-          v-for="appliance in searcher.selectedAppliances.value"
+          v-for="appliance in selectedAppliances"
           :key="appliance"
           :name="appliance"
           type="appliance"
-          @click="searcher.removeAppliance(appliance)"
+          @click="removeAppliance(appliance)"
         />
 
         <SearchItem
-          v-for="ustensil in searcher.selectedUstensils.value"
+          v-for="ustensil in selectedUstensils"
           :key="ustensil"
           :name="ustensil"
           type="ustensil"
-          @click="searcher.removeUstensil(ustensil)"
+          @click="removeUstensil(ustensil)"
         />
       </section>
     </header>
 
     <section class="pt-12 pb-20 grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-      <RecipeCard v-for="recipe in searcher.recipes.value" :key="recipe.id" :recipe="recipe" />
+      <RecipeCard v-for="recipe in results.recipes" :key="recipe.id" :recipe="recipe" />
     </section>
   </section>
 </template>
@@ -80,5 +80,16 @@ import SearchItem from '@/components/SearchItem.vue'
 import TagSelector from '@/components/TagSelector.vue'
 import { useRecipeSearcher } from '@/composables/useRecipeSearcher'
 
-const searcher = await useRecipeSearcher()
+const {
+  query,
+  selectedAppliances,
+  selectedIngredients,
+  selectedUstensils,
+
+  removeAppliance,
+  removeIngredient,
+  removeUstensil,
+
+  results,
+} = await useRecipeSearcher()
 </script>

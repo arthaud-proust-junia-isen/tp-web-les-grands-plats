@@ -1,39 +1,35 @@
 import { RecipeRepository } from '@/logic/RecipeRepository'
 import { RecipeSearcher } from '@/logic/RecipeSearcher'
-import { computed, reactive } from 'vue'
+import { computed, ref, type Ref } from 'vue'
+
+const makeRemoveFnFrom =
+  <T>(refArray: Ref<Array<T>>) =>
+  (itemToRemove: T) =>
+    refArray.value.splice(refArray.value.indexOf(itemToRemove), 1)
 
 export const useRecipeSearcher = async () => {
   const repository = await RecipeRepository.fromExternalJson('/json/recipes.json')
 
-  const searcher = reactive(new RecipeSearcher(repository))
+  const searcher = new RecipeSearcher(repository)
 
-  const query = computed({
-    get: () => searcher.query,
-    set: (newValue) => (searcher.query = newValue),
-  })
+  const query = ref('')
 
-  const selectedIngredients = computed({
-    get: () => [...searcher.ingredients],
-    set: (newValue) => (searcher.ingredients = new Set(newValue)),
-  })
-  const removeIngredient = (ingredient: string) => searcher.ingredients.delete(ingredient)
+  const selectedIngredients = ref([] as Array<string>)
+  const selectedAppliances = ref([] as Array<string>)
+  const selectedUstensils = ref([] as Array<string>)
 
-  const selectedAppliances = computed({
-    get: () => [...searcher.appliances],
-    set: (newValue) => (searcher.appliances = new Set(newValue)),
-  })
-  const removeAppliance = (appliance: string) => searcher.appliances.delete(appliance)
+  const removeIngredient = makeRemoveFnFrom(selectedIngredients)
+  const removeAppliance = makeRemoveFnFrom(selectedAppliances)
+  const removeUstensil = makeRemoveFnFrom(selectedUstensils)
 
-  const selectedUstensils = computed({
-    get: () => [...searcher.ustensils],
-    set: (newValue) => (searcher.ustensils = new Set(newValue)),
-  })
-  const removeUstensil = (ustensil: string) => searcher.ustensils.delete(ustensil)
-
-  const availableIngredients = computed(() => searcher.getAvailableIngredients())
-  const availableAppliances = computed(() => searcher.getAvailableAppliances())
-  const availableUstensils = computed(() => searcher.getAvailableUstensils())
-  const recipes = computed(() => searcher.getResults())
+  const results = computed(() =>
+    searcher.getResultsFor({
+      query: query.value,
+      ingredients: selectedIngredients.value,
+      appliances: selectedAppliances.value,
+      ustensils: selectedUstensils.value,
+    }),
+  )
 
   return {
     searcher,
@@ -47,9 +43,6 @@ export const useRecipeSearcher = async () => {
     removeAppliance,
     removeUstensil,
 
-    availableIngredients,
-    availableAppliances,
-    availableUstensils,
-    recipes,
+    results,
   }
 }
