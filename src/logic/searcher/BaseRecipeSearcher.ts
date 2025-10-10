@@ -1,10 +1,9 @@
+import { dedupeItems } from '@/logic/array'
 import type { Recipe } from '@/logic/Recipe'
 import type { RecipeFilters } from '@/logic/RecipeFilters'
 import { RecipeMatcher } from '@/logic/RecipeMatcher'
 import type { RecipeRepository } from '@/logic/RecipeRepository'
 import { CHARS_COUNT_TO_START_QUERY, type IRecipeSearcher } from '@/logic/searcher/RecipeSearcher'
-
-const dedupeItems = <T>(items: Array<T>) => Array.from(new Set(items))
 
 export class BaseRecipeSearcher implements IRecipeSearcher {
   private repository: RecipeRepository

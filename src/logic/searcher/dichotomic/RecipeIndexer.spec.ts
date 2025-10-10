@@ -1,4 +1,3 @@
-import { Keyword } from '@/logic/searcher/dichotomic/Keyword'
 import { RecipeIndexer } from '@/logic/searcher/dichotomic/RecipeIndexer'
 import { it as baseIt, describe, expect } from 'vitest'
 
@@ -22,17 +21,21 @@ const it = baseIt.extend<{
 })
 
 describe('RecipeIndexer', () => {
-  it('indexes by words occuring more than 3 times', ({ register }) => {
+  it('returns words occuring more than 3 times', ({ register }) => {
     register.indexRecipe(RECIPE)
 
-    expect(register.findRecipeIdsByKeywords(Keyword.fromText('coco'))).toEqual([RECIPE.id])
-    expect(register.findRecipeIdsByKeywords(Keyword.fromText('limonade'))).toEqual([])
+    const keywords = register.getRelevantKeywords()
+
+    expect(keywords).toContainEqual({ keyword: 'coco', recipeIds: [RECIPE.id] })
+    expect(keywords).not.toContainEqual({ keyword: 'limonade', recipeIds: [RECIPE.id] })
   })
 
-  it("doesn't indexes by words less than 3 caracters long", ({ register }) => {
+  it("doesn't return by words less than 3 caracters long", ({ register }) => {
     register.indexRecipe(RECIPE)
 
-    expect(register.findRecipeIdsByKeywords(Keyword.fromText('de'))).toEqual([])
+    const keywords = register.getRelevantKeywords()
+
+    expect(keywords).not.toContainEqual({ keyword: 'de', recipeIds: [RECIPE.id] })
   })
 
   it('sanitize keywords', ({ register }) => {
@@ -47,6 +50,8 @@ describe('RecipeIndexer', () => {
       ustensils: ['cuillère à Soupe', 'verres', 'presse citron'],
     })
 
-    expect(register.findRecipeIdsByKeywords(Keyword.fromText('kiwi'))).toEqual([RECIPE.id])
+    const keywords = register.getRelevantKeywords()
+
+    expect(keywords).toContainEqual({ keyword: 'kiwi', recipeIds: [RECIPE.id] })
   })
 })

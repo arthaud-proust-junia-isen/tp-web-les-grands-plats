@@ -1,20 +1,30 @@
-import type { Recipe } from '@/logic/Recipe'
+import type { Recipe, RecipeId } from '@/logic/Recipe'
 import type { RecipeFilters } from '@/logic/RecipeFilters'
 import { RecipeMatcher } from '@/logic/RecipeMatcher'
 import type { RecipeRepository } from '@/logic/RecipeRepository'
-import { RecipeIndexer } from '@/logic/searcher/dichotomic/RecipeIndexer'
-import { CHARS_COUNT_TO_START_QUERY, type IRecipeSearcher } from '@/logic/searcher/RecipeSearcher'
+import { Keyword } from '@/logic/searcher/dichotomic/Keyword'
+import { RecipeIndexer, type RelevantKeywords } from '@/logic/searcher/dichotomic/RecipeIndexer'
+import { type IRecipeSearcher } from '@/logic/searcher/RecipeSearcher'
 
 const dedupeItems = <T>(items: Array<T>) => Array.from(new Set(items))
 
 export class DichotomicRecipeSearcher implements IRecipeSearcher {
   private repository: RecipeRepository
-  private indexer: RecipeIndexer = new RecipeIndexer()
+
+  private relevantKeywords: RelevantKeywords = []
 
   constructor(repository: RecipeRepository) {
     this.repository = repository
 
-    this.repository.all().forEach((recipe) => this.indexer.indexRecipe(recipe))
+    this.relevantKeywords = this.getRelevantKeywords()
+  }
+
+  private getRelevantKeywords(): RelevantKeywords {
+    const indexer = new RecipeIndexer()
+
+    this.repository.all().forEach((recipe) => indexer.indexRecipe(recipe))
+
+    return indexer.getRelevantKeywords()
   }
 
   getResultsFor(filters: RecipeFilters) {
@@ -29,39 +39,81 @@ export class DichotomicRecipeSearcher implements IRecipeSearcher {
   }
 
   private getRecipesFor(filters: RecipeFilters): Array<Recipe> {
-    return this.repository.filter((recipe) => {
-      const match = new RecipeMatcher(recipe)
+    const recipes =
+      filters.query.length < 3
+        ? this.repository.all()
+        : this.recipesByDichotomicSearch(filters.query)
 
-      if (filters.ingredients.length > 0) {
-        const isMatchingAllIngredients = [...filters.ingredients].every((ingredient) =>
-          match.byIngredient(ingredient),
-        )
+    return recipes.filter((recipe) => this.matchesRecipeFilters(recipe, filters))
+  }
 
-        if (!isMatchingAllIngredients) return false
+  private recipesByDichotomicSearch(string: string): Array<Recipe> {
+    const recipeIds = dedupeItems(
+      Keyword.fromText(string).flatMap((keyword) => this.recipeIdsByDichotomicSearch(keyword)),
+    )
+
+    return recipeIds.reduce((recipes, recipeId) => {
+      const recipe = this.repository.findById(recipeId)
+
+      if (recipe) {
+        recipes.push(recipe)
       }
 
-      if (filters.appliances.length > 0) {
-        const isMatchingAllAppliances = [...filters.appliances].every((appliance) =>
-          match.byAppliance(appliance),
-        )
+      return recipes
+    }, [] as Array<Recipe>)
+  }
+  private recipeIdsByDichotomicSearch(keyword: Keyword): Array<RecipeId> {
+    let min = 0,
+      max = this.relevantKeywords.length - 1
 
-        if (!isMatchingAllAppliances) return false
+    while (min <= max) {
+      const mid = Math.floor((min + max) / 2)
+      const guess = this.relevantKeywords[mid]
+
+      if (!guess) return []
+
+      const result = guess.keyword.localeCompare(keyword.text)
+
+      if (result === 0) return guess.recipeIds
+
+      if (result > 0) {
+        max = mid - 1
+      } else {
+        min = mid + 1
       }
+    }
 
-      if (filters.ustensils.length > 0) {
-        const isMatchingAllUstensils = [...filters.ustensils].every((ustensil) =>
-          match.byUstensil(ustensil),
-        )
+    return []
+  }
 
-        if (!isMatchingAllUstensils) return false
-      }
+  private matchesRecipeFilters(recipe: Recipe, filters: RecipeFilters): boolean {
+    const match = new RecipeMatcher(recipe)
 
-      if (filters.query.length < CHARS_COUNT_TO_START_QUERY) {
-        return true
-      }
+    if (filters.ingredients.length > 0) {
+      const isMatchingAllIngredients = [...filters.ingredients].every((ingredient) =>
+        match.byIngredient(ingredient),
+      )
 
-      return this.indexer.findRecipeIdsByText(filters.query).includes(recipe.id)
-    })
+      if (!isMatchingAllIngredients) return false
+    }
+
+    if (filters.appliances.length > 0) {
+      const isMatchingAllAppliances = [...filters.appliances].every((appliance) =>
+        match.byAppliance(appliance),
+      )
+
+      if (!isMatchingAllAppliances) return false
+    }
+
+    if (filters.ustensils.length > 0) {
+      const isMatchingAllUstensils = [...filters.ustensils].every((ustensil) =>
+        match.byUstensil(ustensil),
+      )
+
+      if (!isMatchingAllUstensils) return false
+    }
+
+    return true
   }
 
   private getAvailableIngredients(filters: RecipeFilters, recipes: Array<Recipe>): Array<string> {

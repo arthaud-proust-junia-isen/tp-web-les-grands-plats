@@ -3,14 +3,12 @@ import { Keyword } from '@/logic/searcher/dichotomic/Keyword'
 
 type CountByRecipe = Map<RecipeId, number>
 type KeywordCountByRecipe = Map<Keyword['text'], CountByRecipe>
-type RelevantKeywords = Map<Keyword['text'], [RecipeId]>
+export type RelevantKeywords = Array<{ keyword: Keyword['text']; recipeIds: [RecipeId] }>
 
 export class RecipeIndexer {
   public static readonly MIN_WORD_LENGTH = 3
   public static readonly MIN_COUNT_TO_BE_RELEVANT = 3
   private keywordCountByRecipe: KeywordCountByRecipe = new Map()
-  private relevantKeywords: RelevantKeywords = new Map()
-  private areRelevantKeywordsComputed = false
 
   indexRecipe(recipe: Recipe) {
     recipe.ingredients.forEach((ingredient) => {
@@ -32,8 +30,6 @@ export class RecipeIndexer {
   }
 
   private incrementKeywordForRecipe(keyword: Keyword, recipeId: RecipeId) {
-    this.areRelevantKeywordsComputed = false
-
     const countByRecipe = this.keywordCountByRecipe.get(keyword.text)
 
     if (countByRecipe) {
@@ -46,41 +42,20 @@ export class RecipeIndexer {
     }
   }
 
-  private getRelevantKeywords(): RelevantKeywords {
-    const keywords: RelevantKeywords = new Map()
+  getRelevantKeywords(): RelevantKeywords {
+    const keywords = [] as RelevantKeywords
 
-    this.keywordCountByRecipe.forEach((countByRecipe, word) => {
+    this.keywordCountByRecipe.forEach((countByRecipe, keyword) => {
       const totalCount = Array.from(countByRecipe.values()).reduce(
         (total, recipeCount) => total + recipeCount,
         0,
       )
 
       if (totalCount >= RecipeIndexer.MIN_COUNT_TO_BE_RELEVANT) {
-        keywords.set(word, [...countByRecipe.keys()] as [RecipeId])
+        keywords.push({ keyword: keyword, recipeIds: [...countByRecipe.keys()] as [RecipeId] })
       }
     })
 
-    return keywords
-  }
-
-  findRecipeIdsByText(text: string): Array<RecipeId> {
-    return this.findRecipeIdsByKeywords(Keyword.fromText(text))
-  }
-
-  findRecipeIdsByKeywords(queryKeywords: Array<Keyword>): Array<RecipeId> {
-    if (!this.areRelevantKeywordsComputed) {
-      this.relevantKeywords = this.getRelevantKeywords()
-      this.areRelevantKeywordsComputed = true
-    }
-
-    const foundRecipeIds = new Set<RecipeId>()
-
-    for (const [keyword, recipeIds] of this.relevantKeywords.entries()) {
-      if (queryKeywords.some((queryKeyword) => keyword.includes(queryKeyword.text))) {
-        recipeIds.forEach((id) => foundRecipeIds.add(id))
-      }
-    }
-
-    return Array.from(foundRecipeIds)
+    return keywords.sort((a, b) => new Intl.Collator('sv').compare(a.keyword, b.keyword))
   }
 }
