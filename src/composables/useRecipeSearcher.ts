@@ -1,5 +1,6 @@
 import { RecipeRepository } from '@/logic/RecipeRepository'
-import { RecipeSearcher } from '@/logic/RecipeSearcher'
+import { DichotomicRecipeSearcher } from '@/logic/searcher/dichotomic/DichotomicRecipeSearcher'
+import type { IRecipeSearcher } from '@/logic/searcher/RecipeSearcher'
 import { computed, ref, type Ref } from 'vue'
 
 const makeRemoveFnFrom =
@@ -10,7 +11,7 @@ const makeRemoveFnFrom =
 export const useRecipeSearcher = async () => {
   const repository = await RecipeRepository.fromExternalJson('/json/recipes.json')
 
-  const searcher = new RecipeSearcher(repository)
+  const searcher: IRecipeSearcher = new DichotomicRecipeSearcher(repository)
 
   const query = ref('')
 

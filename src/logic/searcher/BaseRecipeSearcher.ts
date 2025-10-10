@@ -1,24 +1,11 @@
+import { dedupeItems } from '@/logic/array'
+import type { Recipe } from '@/logic/Recipe'
 import type { RecipeFilters } from '@/logic/RecipeFilters'
-import type { Recipe } from './Recipe'
-import { RecipeMatcher } from './RecipeMatcher'
-import type { RecipeRepository } from './RecipeRepository'
+import { RecipeMatcher } from '@/logic/RecipeMatcher'
+import type { RecipeRepository } from '@/logic/RecipeRepository'
+import { CHARS_COUNT_TO_START_QUERY, type IRecipeSearcher } from '@/logic/searcher/RecipeSearcher'
 
-const CHARS_COUNT_TO_START_QUERY = 3
-
-const dedupeItems = <T>(items: Array<T>) => Array.from(new Set(items))
-
-export interface RecipeSearchResults {
-  recipes: Array<Recipe>
-  availableIngredients: Array<string>
-  availableAppliances: Array<string>
-  availableUstensils: Array<string>
-}
-
-export interface IRecipeSearcher {
-  getResultsFor: (filters: RecipeFilters) => RecipeSearchResults
-}
-
-export class RecipeSearcher implements IRecipeSearcher {
+export class BaseRecipeSearcher implements IRecipeSearcher {
   private repository: RecipeRepository
 
   constructor(repository: RecipeRepository) {
@@ -37,7 +24,7 @@ export class RecipeSearcher implements IRecipeSearcher {
   }
 
   private getRecipesFor(filters: RecipeFilters): Array<Recipe> {
-    return this.repository.getRecipes((recipe) => {
+    return this.repository.filter((recipe) => {
       const match = new RecipeMatcher(recipe)
 
       if (filters.ingredients.length > 0) {
